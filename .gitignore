@@ -1,0 +1,6 @@
+# No publicar datos de producción
+*.xlsx
+*.xls
+*.xlsm
+_pruebas/
+.claude/

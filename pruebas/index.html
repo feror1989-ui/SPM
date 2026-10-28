@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control Pruebas MPFM</title>
+<meta name="description" content="Identifica los pozos y clusters pendientes por medir en el mes y estima los días necesarios según el historial de pruebas.">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <nav class="apps" aria-label="Herramientas">
+      <a href="../index.html">Cronómetro SPM</a>
+      <a href="index.html" aria-current="page">Pruebas de pozos</a>
+    </nav>
+    <h1>Control de pruebas de pozos</h1>
+    <p class="sub">Carga el consolidado de pruebas (LPT / MPFM) y revisa qué falta por medir en el mes, por cluster y por pozo.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="carga" class="card">
+    <label id="drop" class="drop" for="file">
+      <input id="file" type="file" accept=".xlsx,.xlsm,.xls" multiple hidden>
+      <strong>Arrastra aquí el/los Excel consolidados</strong>
+      <span>o haz clic para seleccionarlos. Puedes cargar varios campos a la vez.</span>
+      <small>Los archivos se procesan en tu navegador; no se suben a ningún servidor.</small>
+    </label>
+    <div id="archivos" class="archivos"></div>
+  </section>
+
+  <section id="panel" hidden>
+    <section class="card controles">
+      <div class="ctl"><label for="f-campo">Campo</label><select id="f-campo"></select></div>
+      <div class="ctl"><label for="f-mes">Mes a revisar</label><select id="f-mes"></select></div>
+      <div class="ctl"><label for="f-ref">Historial de referencia</label>
+        <select id="f-ref">
+          <option value="all">Todo el historial</option>
+          <option value="1">Último mes</option>
+          <option value="2">Últimos 2 meses</option>
+          <option value="3">Últimos 3 meses</option>
+          <option value="6">Últimos 6 meses</option>
+          <option value="12">Últimos 12 meses</option>
+        </select></div>
+      <div class="ctl"><label for="f-inact">Ocultar pozos sin medir hace más de (días)</label><input id="f-inact" type="number" min="0" step="1" placeholder="0 = no ocultar"></div>
+      <div class="ctl"><label for="f-hpd">Horas operativas por día</label><input id="f-hpd" type="number" min="1" max="24" step="0.5" value="24"></div>
+      <div class="ctl"><label for="f-neq">Equipos disponibles</label><input id="f-neq" type="number" min="1" max="20" step="1"></div>
+      <div class="ctl"><label for="f-mov">Horas de movilización entre clusters</label><input id="f-mov" type="number" min="0" step="0.5" value="0"></div>
+      <div class="ctl"><label for="f-ini">Inicio del plan</label><input id="f-ini" type="date"></div>
+      <div class="ctl"><label for="f-prio">Prioridad del plan</label>
+        <select id="f-prio">
+          <option value="largo">Clusters más largos primero (optimiza tiempo)</option>
+          <option value="crudo">Mayor producción de crudo primero</option>
+          <option value="antiguo">Más días sin medir primero</option>
+          <option value="nombre">Orden alfabético</option>
+        </select></div>
+      <div class="ctl ctl-btn"><button id="exportar" type="button" class="btn">Exportar a Excel</button></div>
+    </section>
+
+    <section id="kpis" class="kpis"></section>
+
+    <nav class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="clusters" class="on">Por cluster</button>
+      <button type="button" role="tab" data-tab="pozos">Por pozo</button>
+      <button type="button" role="tab" data-tab="plan">Plan por equipo</button>
+      <button type="button" role="tab" data-tab="avance">Avance mensual</button>
+      <button type="button" role="tab" data-tab="alertas">Alertas <span id="nAlertas" class="badge"></span></button>
+    </nav>
+
+    <section id="tab-clusters" class="tab card">
+      <div class="barra">
+        <label class="chk"><input type="checkbox" id="soloPend" checked> Solo clusters con pendientes</label>
+        <span class="hint">Haz clic en un cluster para ver sus pozos.</span>
+      </div>
+      <div class="tabla" id="tblClusters"></div>
+    </section>
+
+    <section id="tab-pozos" class="tab card" hidden>
+      <div class="barra">
+        <input id="buscar" type="search" placeholder="Buscar pozo o cluster…">
+        <select id="f-estado">
+          <option value="pendiente">Pendientes</option>
+          <option value="medido">Medidos en el mes</option>
+          <option value="inactivo">Ocultos por inactividad</option>
+          <option value="todos">Todos</option>
+        </select>
+      </div>
+      <div class="tabla" id="tblPozos"></div>
+    </section>
+
+    <section id="tab-plan" class="tab card" hidden>
+      <div id="plan"></div>
+    </section>
+
+    <section id="tab-avance" class="tab card" hidden>
+      <div id="avance"></div>
+    </section>
+
+    <section id="tab-alertas" class="tab card" hidden>
+      <div class="tabla" id="tblAlertas"></div>
+    </section>
+
+    <p class="nota">Tiempo estimado por pozo = promedio histórico de (fecha de finalización − fecha de alineación) + tiempo típico entre pruebas del mismo equipo. Si el pozo no tiene datos suficientes se usa el promedio de su cluster o del campo.</p>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
